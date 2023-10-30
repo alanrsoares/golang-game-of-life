@@ -7,8 +7,8 @@ import (
 	"runtime"
 )
 
-const deadCell = "□"
-const liveCell = "■"
+const deadCell = "⬛"
+const liveCell = "⬜"
 
 func clearScreen() {
 	var cmd *exec.Cmd
@@ -37,4 +37,7 @@ func render(grid Grid) {
 		}
 		fmt.Println()
 	}
+
+	// render line with instructions
+	fmt.Println("\nPress Ctrl+C to quit.")
 }

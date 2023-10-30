@@ -59,8 +59,8 @@ func (g Grid) GetNeighbors(coord Coordinate) (neighbors []Coordinate) {
 
 // GetLiveNeighbors counts and returns the number of live neighbors around a given Coordinate.
 func (g Grid) GetLiveNeighbors(coord Coordinate) (liveNeighbors int) {
-	for _, neighborCoord := range g.GetNeighbors(coord) {
-		if cell, ok := g[neighborCoord]; ok && cell.Alive {
+	for _, coord := range g.GetNeighbors(coord) {
+		if cell, ok := g[coord]; ok && cell.Alive {
 			liveNeighbors++
 		}
 	}
@@ -77,14 +77,17 @@ func (g Grid) ShouldLive(coord Coordinate) bool {
 
 // NextGeneration computes the next generation of the grid based on the current state,
 // applying the rules of Conway's Game of Life and returns the new grid.
-func (g Grid) NextGeneration() Grid {
+func (g Grid) NextGeneration(
+	width int,
+	height int,
+) Grid {
 	newGrid := NewGrid()
 	considered := make(map[Coordinate]bool)
 
 	// Consider the state of each cell and its neighbors.
-	for coord := range g {
-		for _, neighbor := range g.GetNeighbors(coord) {
-			considered[neighbor] = true
+	for gridCoord := range g {
+		for _, neighborCoord := range g.GetNeighbors(gridCoord) {
+			considered[neighborCoord] = true
 		}
 	}
 
@@ -96,4 +99,41 @@ func (g Grid) NextGeneration() Grid {
 	}
 
 	return newGrid
+}
+
+type Game struct {
+	Grid   Grid
+	height int
+	width  int
+}
+
+func NewGame(height, width int) *Game {
+	newGrid := NewGrid()
+	// Seed the grid with an initial glider moving to the bottom right.
+	newGrid.SetCell(Coordinate{X: 1, Y: 0}, true)
+	newGrid.SetCell(Coordinate{X: 2, Y: 1}, true)
+	newGrid.SetCell(Coordinate{X: 0, Y: 2}, true)
+	newGrid.SetCell(Coordinate{X: 1, Y: 2}, true)
+	newGrid.SetCell(Coordinate{X: 2, Y: 2}, true)
+
+	return &Game{
+		Grid:   newGrid,
+		height: height,
+		width:  width,
+	}
+}
+
+func (g *Game) SetCell(coord Coordinate, alive bool) {
+	g.Grid.SetCell(coord, alive)
+}
+
+func (g *Game) GetCell(coord Coordinate) Cell {
+	return g.Grid.GetCell(coord)
+}
+
+func (g *Game) NextGeneration() {
+	g.Grid = g.Grid.NextGeneration(
+		g.width,
+		g.height,
+	)
 }
