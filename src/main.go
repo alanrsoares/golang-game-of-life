@@ -20,10 +20,12 @@ func main() {
 
 	frames := 0
 
+	renderer := ConsoleRenderer{game}
+
 	// Game loop - runs for 10 generations for demonstration purposes.
 	for i := 0; i < 1000000000; i++ {
 		frames++
-		render(game.Grid)
+		renderer.Render()
 		game.NextGeneration()
 		fmt.Printf("Generation: %d\n", i)
 		time.Sleep(time.Second / frameRate)

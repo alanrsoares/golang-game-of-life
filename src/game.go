@@ -1,10 +1,5 @@
 package main
 
-import "fmt"
-
-const deadCell = "⬛"
-const liveCell = "⬜"
-
 // Coordinate represents a point on the grid with X and Y positions.
 type Coordinate struct {
 	X, Y int
@@ -104,23 +99,6 @@ func (g Grid) NextGeneration(
 	}
 
 	return newGrid
-}
-
-func (g Grid) Render() {
-	topLeft := Coordinate{X: 0, Y: 0}
-	bottomRight := Coordinate{X: gridSize - 1, Y: gridSize - 1}
-
-	for y := topLeft.Y; y <= bottomRight.Y; y++ {
-		for x := topLeft.X; x <= bottomRight.X; x++ {
-			coord := Coordinate{X: x, Y: y}
-			if cell, ok := g[coord]; ok && cell.Alive {
-				fmt.Print(liveCell)
-			} else {
-				fmt.Print(deadCell)
-			}
-		}
-		fmt.Println()
-	}
 }
 
 type Game struct {

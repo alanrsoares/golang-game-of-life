@@ -7,7 +7,15 @@ import (
 	"runtime"
 )
 
-func clearScreen() {
+const deadCell = "⬛"
+const liveCell = "⬜"
+
+type ConsoleRenderer struct {
+	Game *Game
+}
+
+// Clear the screen
+func (cr ConsoleRenderer) clearScreen() {
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", "cls")
@@ -18,11 +26,23 @@ func clearScreen() {
 	cmd.Run()
 }
 
-func render(grid Grid) {
-	clearScreen() // Clear the screen before rendering the new state
+// Render the game grid
+func (cr *ConsoleRenderer) Render() {
+	cr.clearScreen()
+	grid := cr.Game.Grid
+	width, height := cr.Game.width, cr.Game.height
 
-	grid.Render() // Render the grid
+	for Y := 0; Y < height; Y++ {
+		for X := 0; X < width; X++ {
+			cell := grid.GetCell(Coordinate{X, Y})
+			if cell.Alive {
+				fmt.Print(liveCell)
+			} else {
+				fmt.Print(deadCell)
+			}
+		}
+		fmt.Println()
+	}
 
-	// render line with instructions
 	fmt.Println("\nPress Ctrl+C to quit.")
 }
