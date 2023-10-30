@@ -13,3 +13,9 @@ git clone git@github.com:alanrsoares/golang-game-of-life.git && cd $_
 ```bash
 go run ./src
 ```
+
+or
+
+```bash
+make run
+```
