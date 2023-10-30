@@ -27,6 +27,52 @@ func TestWrapCoordinate(t *testing.T) {
 	}
 }
 
+func TestCellShouldLive(t *testing.T) {
+	tests := []struct {
+		name     string
+		position Position
+		expected bool
+	}{
+		{
+			"A live cell with fewer than two live neighbors dies",
+			Position{2, 1},
+			false,
+		},
+		{
+			"A live cell with two or three live neighbors lives",
+			Position{2, 2},
+			true,
+		},
+		{
+			"A dead cell with exactly three live neighbors becomes alive",
+			Position{1, 2},
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// arrange
+			game := NewGame(
+				Dimensions{width: 5, height: 5},
+			)
+
+			game.SetCell(Position{2, 1}, true)
+			game.SetCell(Position{2, 2}, true)
+			game.SetCell(Position{2, 3}, true)
+
+			// act
+			result := game.ShouldLive(tt.position)
+
+			// assert
+			if result != tt.expected {
+				t.Errorf("Cell at %v should live = %v, want %v", tt.position, result, tt.expected)
+			}
+		})
+	}
+
+}
+
 func TestNextGeneration(t *testing.T) {
 	game := NewGame(
 		Dimensions{width: 5, height: 5},
