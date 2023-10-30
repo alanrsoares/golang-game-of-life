@@ -28,7 +28,7 @@ test:
 clean:
 	@echo "Cleaning..."
 	go clean
-	rm -f $(BINARY_NAME)
+	rm -f bin/$(BINARY_NAME)
 
 # "make build" will compile the app and produce a binary.
 # "make run" will run the app using 'go run'.
