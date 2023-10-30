@@ -1,7 +1,7 @@
 # Makefile for building and running a Go project.
 
 # Set the output binary name.
-BINARY_NAME=myapp
+BINARY_NAME=golang-game-of-life
 
 # Set the source directory.
 SRC_DIR=./src
@@ -12,7 +12,7 @@ all: build
 # Build the project.
 build:
 	@echo "Building..."
-	go build -o $(BINARY_NAME) $(SRC_DIR)
+	go build -o bin/$(BINARY_NAME) $(SRC_DIR)
 
 # Run the project.
 run:
