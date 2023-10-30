@@ -14,7 +14,6 @@ func TestWrapCoordinate(t *testing.T) {
 		{"Wrap X coordinate", Coordinate{-1, 5}, Coordinate{gridSize - 1, 5}},
 		{"Wrap Y coordinate", Coordinate{5, -1}, Coordinate{5, gridSize - 1}},
 		{"No wrap needed", Coordinate{5, 5}, Coordinate{5, 5}},
-		// Add more test cases as necessary.
 	}
 
 	for _, tt := range tests {
@@ -24,5 +23,31 @@ func TestWrapCoordinate(t *testing.T) {
 				t.Errorf("wrapCoordinate(%v) = %v, want %v", tt.coord, result, tt.expected)
 			}
 		})
+	}
+}
+
+func TestNextGeneration(t *testing.T) {
+	game := NewGame(
+		5,
+		5,
+	)
+
+	game.SetCell(Coordinate{X: 2, Y: 1}, true)
+	game.SetCell(Coordinate{X: 2, Y: 2}, true)
+	game.SetCell(Coordinate{X: 2, Y: 3}, true)
+
+	game.NextGeneration()
+
+	// Check some expected alive cells after first generation of glider.
+	expectedAlive := []Coordinate{
+		{X: 1, Y: 2},
+		{X: 2, Y: 2},
+		{X: 3, Y: 2},
+	}
+
+	for _, coord := range expectedAlive {
+		if !game.GetCell(coord).Alive {
+			t.Errorf("Expected cell at %v to be alive", coord)
+		}
 	}
 }

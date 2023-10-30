@@ -109,12 +109,6 @@ type Game struct {
 
 func NewGame(height, width int) *Game {
 	newGrid := NewGrid()
-	// Seed the grid with an initial glider moving to the bottom right.
-	newGrid.SetCell(Coordinate{X: 1, Y: 0}, true)
-	newGrid.SetCell(Coordinate{X: 2, Y: 1}, true)
-	newGrid.SetCell(Coordinate{X: 0, Y: 2}, true)
-	newGrid.SetCell(Coordinate{X: 1, Y: 2}, true)
-	newGrid.SetCell(Coordinate{X: 2, Y: 2}, true)
 
 	return &Game{
 		Grid:   newGrid,
