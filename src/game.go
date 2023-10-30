@@ -29,15 +29,15 @@ type Cell struct {
 
 // Grid is a map that associates each Position with a Cell. It represents the entire game state.
 type Grid struct {
-	Cells map[Position]Cell
 	Dimensions
+	Cells map[Position]Cell
 }
 
 // NewGrid initializes and returns a new instance of an empty Grid.
 func NewGrid(dimensions Dimensions) *Grid {
 	return &Grid{
-		Cells:      make(map[Position]Cell),
 		Dimensions: dimensions,
+		Cells:      make(map[Position]Cell),
 	}
 }
 
@@ -110,27 +110,19 @@ func (g Grid) NextGeneration() *Grid {
 }
 
 type Game struct {
-	Grid *Grid
+	Grid
 	Dimensions
 }
 
 func NewGame(dimensions Dimensions) *Game {
-	newGrid := NewGrid(dimensions)
+	grid := NewGrid(dimensions) // Creates a new grid instance
 
 	return &Game{
-		Grid:       newGrid,
+		Grid:       *grid, // Dereference to store by value
 		Dimensions: dimensions,
 	}
 }
 
-func (g *Game) SetCell(coord Position, alive bool) {
-	g.Grid.SetCell(coord, alive)
-}
-
-func (g *Game) GetCell(coord Position) Cell {
-	return g.Grid.GetCell(coord)
-}
-
 func (g *Game) NextGeneration() {
-	g.Grid = g.Grid.NextGeneration()
+	*g = Game{Grid: *g.Grid.NextGeneration(), Dimensions: g.Dimensions}
 }
