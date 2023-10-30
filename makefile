@@ -32,4 +32,5 @@ clean:
 
 # "make build" will compile the app and produce a binary.
 # "make run" will run the app using 'go run'.
+# "make test" will run the tests.
 # "make clean" will remove the binary and clean up the project.
