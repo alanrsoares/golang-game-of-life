@@ -32,9 +32,9 @@ func (cr *ConsoleRenderer) Render() {
 	grid := cr.Game.Grid
 	width, height := cr.Game.width, cr.Game.height
 
-	for Y := 0; Y < height; Y++ {
-		for X := 0; X < width; X++ {
-			cell := grid.GetCell(Coordinate{X, Y})
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			cell := grid.GetCell(Position{x, y})
 			if cell.Alive {
 				fmt.Print(liveCell)
 			} else {

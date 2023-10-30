@@ -1,55 +1,66 @@
 package main
 
-// Coordinate represents a point on the grid with X and Y positions.
-type Coordinate struct {
-	X, Y int
+// Position represents a point on the grid with X and Y positions.
+type Position struct {
+	x, y int
 }
 
-// wrap adjusts the Coordinate to wrap around the grid based on the given gridSize,
+type Dimensions struct {
+	width, height int
+}
+
+// wrap adjusts the Position to wrap around the grid based on the given gridSize,
 // ensuring that the grid behaves as if it were toroidal (top connects to bottom and left connects to right).
-func (c Coordinate) wrap(gridSize int) Coordinate {
-	return Coordinate{
-		X: (c.X + gridSize) % gridSize,
-		Y: (c.Y + gridSize) % gridSize,
+func (c Position) wrap(
+	height int,
+	width int,
+) Position {
+	return Position{
+		x: (c.x + width) % width,
+		y: (c.y + height) % height,
 	}
 }
 
 // Cell represents a single cell on the grid. It holds its aliveness state and its position.
 type Cell struct {
+	Position
 	Alive bool
-	Coord Coordinate
 }
 
-// Grid is a map that associates each Coordinate with a Cell. It represents the entire game state.
-type Grid map[Coordinate]Cell
+// Grid is a map that associates each Position with a Cell. It represents the entire game state.
+type Grid struct {
+	Cells map[Position]Cell
+	Dimensions
+}
 
 // NewGrid initializes and returns a new instance of an empty Grid.
-func NewGrid() Grid {
-	return make(Grid)
+func NewGrid(dimensions Dimensions) *Grid {
+	return &Grid{
+		Cells:      make(map[Position]Cell),
+		Dimensions: dimensions,
+	}
 }
 
-// SetCell updates the grid at the specified Coordinate to be alive or dead.
-func (g Grid) SetCell(coord Coordinate, alive bool) {
-	g[coord] = Cell{Alive: alive, Coord: coord}
+// SetCell updates the grid at the specified Position to be alive or dead.
+func (g Grid) SetCell(pos Position, alive bool) {
+	g.Cells[pos] = Cell{Alive: alive, Position: pos}
 }
 
-// GetCell retrieves the Cell at the specified Coordinate.
-func (g Grid) GetCell(coord Coordinate) Cell {
-	return g[coord]
+// GetCell retrieves the Cell at the specified Position.
+func (g Grid) GetCell(coord Position) Cell {
+	return g.Cells[coord]
 }
 
-// WrapCoordinate wraps a given Coordinate around the grid to ensure it doesn't go out of bounds.
-func (g Grid) WrapCoordinate(coord Coordinate) Coordinate {
-	return coord.wrap(gridSize)
-}
-
-// GetNeighbors computes and returns a slice of Coordinates that surround a given Coordinate on the grid.
+// GetNeighbors computes and returns a slice of Positions that surround a given Position on the grid.
 // This includes diagonals, so each cell has eight neighbors.
-func (g Grid) GetNeighbors(coord Coordinate) (neighbors []Coordinate) {
+func (g Grid) GetNeighbors(pos Position) (neighbors []Position) {
 	for dx := -1; dx <= 1; dx++ {
 		for dy := -1; dy <= 1; dy++ {
 			if dx != 0 || dy != 0 {
-				wrappedCoord := Coordinate{X: coord.X + dx, Y: coord.Y + dy}.wrap(gridSize)
+				wrappedCoord := Position{x: pos.x + dx, y: pos.y + dy}.wrap(
+					g.height,
+					g.width,
+				)
 				neighbors = append(neighbors, wrappedCoord)
 			}
 		}
@@ -57,19 +68,19 @@ func (g Grid) GetNeighbors(coord Coordinate) (neighbors []Coordinate) {
 	return
 }
 
-// GetLiveNeighbors counts and returns the number of live neighbors around a given Coordinate.
-func (g Grid) GetLiveNeighbors(coord Coordinate) (liveNeighbors int) {
+// GetLiveNeighbors counts and returns the number of live neighbors around a given Position.
+func (g Grid) GetLiveNeighbors(coord Position) (liveNeighbors int) {
 	for _, coord := range g.GetNeighbors(coord) {
-		if cell, ok := g[coord]; ok && cell.Alive {
+		if cell, ok := g.Cells[coord]; ok && cell.Alive {
 			liveNeighbors++
 		}
 	}
 	return
 }
 
-// ShouldLive determines whether a cell at a given Coordinate should be alive in the next generation,
+// ShouldLive determines whether a cell at a given Position should be alive in the next generation,
 // based on Conway's Game of Life rules.
-func (g Grid) ShouldLive(coord Coordinate) bool {
+func (g Grid) ShouldLive(coord Position) bool {
 	cell := g.GetCell(coord)
 	liveNeighbors := g.GetLiveNeighbors(coord)
 	return (cell.Alive && liveNeighbors == 2) || liveNeighbors == 3
@@ -77,15 +88,12 @@ func (g Grid) ShouldLive(coord Coordinate) bool {
 
 // NextGeneration computes the next generation of the grid based on the current state,
 // applying the rules of Conway's Game of Life and returns the new grid.
-func (g Grid) NextGeneration(
-	width int,
-	height int,
-) Grid {
-	newGrid := NewGrid()
-	considered := make(map[Coordinate]bool)
+func (g Grid) NextGeneration() *Grid {
+	newGrid := NewGrid(g.Dimensions)
+	considered := make(map[Position]bool)
 
 	// Consider the state of each cell and its neighbors.
-	for gridCoord := range g {
+	for gridCoord := range g.Cells {
 		for _, neighborCoord := range g.GetNeighbors(gridCoord) {
 			considered[neighborCoord] = true
 		}
@@ -102,32 +110,27 @@ func (g Grid) NextGeneration(
 }
 
 type Game struct {
-	Grid   Grid
-	height int
-	width  int
+	Grid *Grid
+	Dimensions
 }
 
-func NewGame(height, width int) *Game {
-	newGrid := NewGrid()
+func NewGame(dimensions Dimensions) *Game {
+	newGrid := NewGrid(dimensions)
 
 	return &Game{
-		Grid:   newGrid,
-		height: height,
-		width:  width,
+		Grid:       newGrid,
+		Dimensions: dimensions,
 	}
 }
 
-func (g *Game) SetCell(coord Coordinate, alive bool) {
+func (g *Game) SetCell(coord Position, alive bool) {
 	g.Grid.SetCell(coord, alive)
 }
 
-func (g *Game) GetCell(coord Coordinate) Cell {
+func (g *Game) GetCell(coord Position) Cell {
 	return g.Grid.GetCell(coord)
 }
 
 func (g *Game) NextGeneration() {
-	g.Grid = g.Grid.NextGeneration(
-		g.width,
-		g.height,
-	)
+	g.Grid = g.Grid.NextGeneration()
 }
