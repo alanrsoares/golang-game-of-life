@@ -1,0 +1,84 @@
+package main
+
+// ... other necessary imports ...
+
+type Coordinate struct {
+	X, Y int
+}
+
+// wrapCoordinate wraps the coordinate around the grid if it goes out of bounds.
+func (c Coordinate) wrap(gridSize int) Coordinate {
+	return Coordinate{
+		X: (c.X + gridSize) % gridSize,
+		Y: (c.Y + gridSize) % gridSize,
+	}
+}
+
+type Cell struct {
+	Alive bool
+	Coord Coordinate
+}
+
+type Grid map[Coordinate]Cell
+
+func NewGrid() Grid {
+	return make(Grid)
+}
+
+func (g Grid) SetCell(coord Coordinate, alive bool) {
+	g[coord] = Cell{Alive: alive, Coord: coord}
+}
+
+func (g Grid) GetCell(coord Coordinate) Cell {
+	return g[coord]
+}
+
+func (g Grid) WrapCoordinate(coord Coordinate) Coordinate {
+	return coord.wrap(gridSize)
+}
+
+func (g Grid) GetNeighbors(coord Coordinate) (neighbors []Coordinate) {
+	for dx := -1; dx <= 1; dx++ {
+		for dy := -1; dy <= 1; dy++ {
+			if dx != 0 || dy != 0 {
+				wrappedCoord := Coordinate{X: coord.X + dx, Y: coord.Y + dy}.wrap(gridSize)
+				neighbors = append(neighbors, wrappedCoord)
+			}
+		}
+	}
+	return
+}
+
+func (g Grid) GetLiveNeighbors(coord Coordinate) (liveNeighbors int) {
+	for _, neighborCoord := range g.GetNeighbors(coord) {
+		if cell, ok := g[neighborCoord]; ok && cell.Alive {
+			liveNeighbors++
+		}
+	}
+	return
+}
+
+func (g Grid) ShouldLive(coord Coordinate) bool {
+	cell := g.GetCell(coord)
+	liveNeighbors := g.GetLiveNeighbors(coord)
+	return (cell.Alive && liveNeighbors == 2) || liveNeighbors == 3
+}
+
+func (g Grid) NextGeneration() Grid {
+	newGrid := NewGrid()
+	considered := make(map[Coordinate]bool)
+
+	for coord := range g {
+		for _, neighbor := range g.GetNeighbors(coord) {
+			considered[neighbor] = true
+		}
+	}
+
+	for coord := range considered {
+		if g.ShouldLive(coord) {
+			newGrid.SetCell(coord, true)
+		}
+	}
+
+	return newGrid
+}

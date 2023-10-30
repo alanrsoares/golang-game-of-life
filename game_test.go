@@ -19,7 +19,7 @@ func TestWrapCoordinate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := wrapCoordinate(tt.coord)
+			result := tt.coord.wrap(gridSize)
 			if result != tt.expected {
 				t.Errorf("wrapCoordinate(%v) = %v, want %v", tt.coord, result, tt.expected)
 			}
