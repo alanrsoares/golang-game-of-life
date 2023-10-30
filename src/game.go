@@ -93,16 +93,16 @@ func (g Grid) NextGeneration() *Grid {
 	considered := make(map[Position]bool)
 
 	// Consider the state of each cell and its neighbors.
-	for gridCoord := range g.Cells {
-		for _, neighborCoord := range g.GetNeighbors(gridCoord) {
-			considered[neighborCoord] = true
+	for gridPos := range g.Cells {
+		for _, neighborPos := range g.GetNeighbors(gridPos) {
+			considered[neighborPos] = true
 		}
 	}
 
 	// Update the cells based on whether they should live or die.
-	for coord := range considered {
-		if g.ShouldLive(coord) {
-			newGrid.SetCell(coord, true)
+	for pos := range considered {
+		if g.ShouldLive(pos) {
+			newGrid.SetCell(pos, true)
 		}
 	}
 
