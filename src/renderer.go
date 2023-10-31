@@ -64,20 +64,16 @@ func (cr *CLIRenderer) Render() {
 func (cr *CLIRenderer) Play() {
 	generation := 0
 	fps := 60
-	tickDuration := time.Second / time.Duration(fps)
 
 	fmt.Println("Press Ctrl+C to quit.")
 
-	ticker := time.NewTicker(tickDuration)
-
-	for range ticker.C {
+	renderLoop(func() {
 		generation++
 		cr.Render()
 		cr.Game.NextGeneration()
 		fmt.Println("\nPress Ctrl+C to quit.")
 		fmt.Printf("Generation: %d (%dfps)\n", generation, fps)
-
-	}
+	}, fps)
 }
 
 type GUIRenderer struct {
@@ -110,25 +106,39 @@ func (wr *GUIRenderer) Render(
 		}
 	}
 
+	container.Refresh()
 }
 
 func (wr *GUIRenderer) Play() {
 	generation := 0
-	tickDuration := time.Second / 24
 
 	app := app.New()
 	window := app.NewWindow("Game of Life")
 	container := container.NewGridWithColumns(wr.Game.width)
 
+	startTime := time.Now()
+
 	go func() {
-		ticker := time.NewTicker(tickDuration)
-		for range ticker.C {
+		renderLoop(func() {
 			generation++
+
+			elapsed := time.Since(startTime)
+
+			effectiveFps := float64(generation) / elapsed.Seconds()
+
+			// display the current generation and effective fps
+			window.SetTitle(fmt.Sprintf(
+				"Game of Life (Generation: %d, FPS: %.2f)",
+				generation,
+				effectiveFps,
+			))
+
 			wr.Render(container)
-			container.Refresh()
+
 			wr.Game.NextGeneration()
-			time.Sleep(tickDuration)
-		}
+
+			time.Sleep(time.Second / 28)
+		}, 60)
 	}()
 
 	fmt.Println("\nPress Ctrl+C to quit.")
@@ -172,5 +182,15 @@ func ChooseRenderer(game *Game) Renderer {
 	default:
 		fmt.Println("Invalid choice, defaulting to Console.")
 		return &CLIRenderer{Game: game}
+	}
+}
+
+func renderLoop(render func(), fps int) {
+	frameDuration := time.Second / time.Duration(fps)
+
+	ticker := time.NewTicker(frameDuration)
+
+	for range ticker.C {
+		render()
 	}
 }
