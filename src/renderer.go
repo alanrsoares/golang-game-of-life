@@ -52,11 +52,12 @@ func (cr *CLIRenderer) Render() {
 		for x := 0; x < width; x++ {
 			cell := grid.GetCell(Position{x, y})
 
-			cellToPrint := deadCell
+			cellContent := deadCell
 			if cell.Alive {
-				cellToPrint = liveCell
+				cellContent = liveCell
 			}
-			fmt.Print(cellToPrint)
+
+			fmt.Print(cellContent)
 		}
 		fmt.Println()
 	}
