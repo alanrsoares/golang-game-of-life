@@ -51,11 +51,12 @@ func (cr *CLIRenderer) Render() {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			cell := grid.GetCell(Position{x, y})
+
+			cellToPrint := deadCell
 			if cell.Alive {
-				fmt.Print(liveCell)
-			} else {
-				fmt.Print(deadCell)
+				cellToPrint = liveCell
 			}
+			fmt.Print(cellToPrint)
 		}
 		fmt.Println()
 	}
@@ -90,7 +91,7 @@ func (wr *GUIRenderer) Render(
 
 	var cellSize float32 = 10.0
 
-	container.Objects = nil
+	container.Objects = make([]fyne.CanvasObject, 0)
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -117,6 +118,8 @@ func (wr *GUIRenderer) Play() {
 	container := container.NewGridWithColumns(wr.Game.width)
 
 	startTime := time.Now()
+	fps := 60
+	frameDuration := time.Second / time.Duration(fps)
 
 	go func() {
 		renderLoop(func() {
@@ -134,10 +137,9 @@ func (wr *GUIRenderer) Play() {
 			))
 
 			wr.Render(container)
-
 			wr.Game.NextGeneration()
 
-			time.Sleep(time.Second / 28)
+			time.Sleep(frameDuration * 2)
 		}, 60)
 	}()
 
