@@ -1,21 +1,30 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"image/color"
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 )
 
-const deadCell = "⬛"
-const liveCell = "⬜"
+type Renderer interface {
+	Play()
+}
 
-type ConsoleRenderer struct {
+type CLIRenderer struct {
+	Renderer
 	Game *Game
 }
 
-// Clear the screen
-func (cr ConsoleRenderer) clearScreen() {
+func clearConsole() {
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", "cls")
@@ -27,10 +36,17 @@ func (cr ConsoleRenderer) clearScreen() {
 }
 
 // Render the game grid
-func (cr *ConsoleRenderer) Render() {
-	cr.clearScreen()
+func (cr *CLIRenderer) Render() {
+	clearConsole()
+	const (
+		liveCell = "⬜"
+		deadCell = "⬛"
+	)
+
 	grid := cr.Game.Grid
 	width, height := cr.Game.width, cr.Game.height
+
+	fmt.Println("Press Ctrl+C to quit.")
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -43,6 +59,118 @@ func (cr *ConsoleRenderer) Render() {
 		}
 		fmt.Println()
 	}
+}
+
+func (cr *CLIRenderer) Play() {
+	generation := 0
+	fps := 60
+	tickDuration := time.Second / time.Duration(fps)
+
+	fmt.Println("Press Ctrl+C to quit.")
+
+	ticker := time.NewTicker(tickDuration)
+
+	for range ticker.C {
+		generation++
+		cr.Render()
+		cr.Game.NextGeneration()
+		fmt.Println("\nPress Ctrl+C to quit.")
+		fmt.Printf("Generation: %d (%dfps)\n", generation, fps)
+
+	}
+}
+
+type GUIRenderer struct {
+	Renderer
+	Game *Game
+}
+
+// Render the game grid with a fyne window
+func (wr *GUIRenderer) Render(
+	container *fyne.Container,
+) {
+	grid := wr.Game.Grid
+	width, height := wr.Game.width, wr.Game.height
+
+	var cellSize float32 = 10.0
+
+	container.Objects = nil
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			cell := grid.GetCell(Position{x, y})
+			rect := canvas.NewRectangle(color.Gray{Y: 0x20})
+			rect.SetMinSize(fyne.NewSize(cellSize, cellSize))
+
+			if cell.Alive {
+				rect.FillColor = color.RGBA{R: 0, G: 255, B: 255, A: 255}
+			}
+
+			container.Add(rect)
+		}
+	}
+
+}
+
+func (wr *GUIRenderer) Play() {
+	generation := 0
+	tickDuration := time.Second / 24
+
+	app := app.New()
+	window := app.NewWindow("Game of Life")
+	container := container.NewGridWithColumns(wr.Game.width)
+
+	go func() {
+		ticker := time.NewTicker(tickDuration)
+		for range ticker.C {
+			generation++
+			wr.Render(container)
+			container.Refresh()
+			wr.Game.NextGeneration()
+			time.Sleep(tickDuration)
+		}
+	}()
 
 	fmt.Println("\nPress Ctrl+C to quit.")
+
+	window.SetContent(container)
+	window.ShowAndRun()
+}
+
+const (
+	cli = "cli"
+	gui = "gui"
+)
+
+var (
+	cliFlag      = flag.Bool(cli, false, "Run in CLI mode")
+	guiFlag      = flag.Bool(gui, false, "Run in GUI mode")
+	rendererFlag = flag.String("renderer", "", "Choose renderer")
+)
+
+func ChooseRenderer(game *Game) Renderer {
+	flag.Parse()
+
+	if *cliFlag || *rendererFlag == cli {
+		return &CLIRenderer{Game: game}
+	} else if *guiFlag || *rendererFlag == gui {
+		return &GUIRenderer{Game: game}
+	}
+
+	fmt.Println("Choose the rendering mode:")
+	fmt.Println("1) CLI")
+	fmt.Println("2) GUI")
+
+	var choice int
+	fmt.Scan(&choice)
+
+	switch choice {
+	case 1:
+		return &CLIRenderer{Game: game}
+	case 2:
+		return &GUIRenderer{Game: game}
+	default:
+		fmt.Println("Invalid choice, defaulting to Console.")
+		return &CLIRenderer{Game: game}
+	}
 }

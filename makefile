@@ -19,6 +19,14 @@ run:
 	@echo "Running..."
 	go run $(SRC_DIR)
 
+run-cli:
+	@echo "Running..."
+	go run $(SRC_DIR) -cli
+
+run-gui:
+	@echo "Running..."
+	go run $(SRC_DIR) -gui
+
 # Run the tests.
 test:
 	@echo "Testing..."
