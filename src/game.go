@@ -46,14 +46,14 @@ func (g Grid) SetCell(pos Position, alive bool) {
 	g.Cells[pos] = Cell{Alive: alive, Position: pos}
 }
 
-// GetCell retrieves the Cell at the specified Position.
-func (g Grid) GetCell(coord Position) Cell {
+// Cell retrieves the Cell at the specified Position.
+func (g Grid) Cell(coord Position) Cell {
 	return g.Cells[coord]
 }
 
-// GetNeighbors computes and returns a slice of Positions that surround a given Position on the grid.
+// Neighbors computes and returns a slice of Positions that surround a given Position on the grid.
 // This includes diagonals, so each cell has eight neighbors.
-func (g Grid) GetNeighbors(pos Position) (neighbors []Position) {
+func (g Grid) Neighbors(pos Position) (neighbors []Position) {
 	for dx := -1; dx <= 1; dx++ {
 		for dy := -1; dy <= 1; dy++ {
 			if dx != 0 || dy != 0 {
@@ -68,9 +68,9 @@ func (g Grid) GetNeighbors(pos Position) (neighbors []Position) {
 	return
 }
 
-// GetLiveNeighbors counts and returns the number of live neighbors around a given Position.
-func (g Grid) GetLiveNeighbors(coord Position) (liveNeighbors int) {
-	for _, coord := range g.GetNeighbors(coord) {
+// LiveNeighbors counts and returns the number of live neighbors around a given Position.
+func (g Grid) LiveNeighbors(coord Position) (liveNeighbors int) {
+	for _, coord := range g.Neighbors(coord) {
 		if cell, ok := g.Cells[coord]; ok && cell.Alive {
 			liveNeighbors++
 		}
@@ -81,9 +81,18 @@ func (g Grid) GetLiveNeighbors(coord Position) (liveNeighbors int) {
 // ShouldLive determines whether a cell at a given Position should be alive in the next generation,
 // based on Conway's Game of Life rules.
 func (g Grid) ShouldLive(coord Position) bool {
-	cell := g.GetCell(coord)
-	liveNeighbors := g.GetLiveNeighbors(coord)
-	return (cell.Alive && liveNeighbors == 2) || liveNeighbors == 3
+	switch cell, liveNeighbors := g.Cell(coord), g.LiveNeighbors(coord); {
+	// rule: Any live cell with fewer than two live neighbours
+	// rule: Any live cell with more than three live neighbours dies, as if by overpopulation.
+	case cell.Alive && liveNeighbors < 2 || liveNeighbors > 3:
+		return false
+	// rule: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+	case !cell.Alive && liveNeighbors == 3:
+		return true
+	// rule: Any live cell with two or three live neighbours lives on to the next generation..
+	default:
+		return cell.Alive
+	}
 }
 
 // NextGeneration computes the next generation of the grid based on the current state,
@@ -94,7 +103,7 @@ func (g Grid) NextGeneration() *Grid {
 
 	// Consider the state of each cell and its neighbors.
 	for gridPos := range g.Cells {
-		for _, neighborPos := range g.GetNeighbors(gridPos) {
+		for _, neighborPos := range g.Neighbors(gridPos) {
 			considered[neighborPos] = true
 		}
 	}

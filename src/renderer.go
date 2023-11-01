@@ -50,7 +50,7 @@ func (cr *CLIRenderer) Render() {
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			cell := grid.GetCell(Position{x, y})
+			cell := grid.Cell(Position{x, y})
 
 			cellContent := deadCell
 			if cell.Alive {
@@ -96,7 +96,7 @@ func (wr *GUIRenderer) Render(
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			cell := grid.GetCell(Position{x, y})
+			cell := grid.Cell(Position{x, y})
 			rect := canvas.NewRectangle(color.Gray{Y: 0x20})
 			rect.SetMinSize(fyne.NewSize(cellSize, cellSize))
 

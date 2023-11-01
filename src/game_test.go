@@ -92,7 +92,7 @@ func TestNextGeneration(t *testing.T) {
 	}
 
 	for _, coord := range expectedAlive {
-		if !game.GetCell(coord).Alive {
+		if !game.Cell(coord).Alive {
 			t.Errorf("Expected cell at %v to be alive", coord)
 		}
 	}
