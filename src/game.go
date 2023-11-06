@@ -56,13 +56,16 @@ func (g Grid) Cell(coord Position) Cell {
 func (g Grid) Neighbors(pos Position) (neighbors []Position) {
 	for dx := -1; dx <= 1; dx++ {
 		for dy := -1; dy <= 1; dy++ {
-			if dx != 0 || dy != 0 {
-				wrappedCoord := Position{x: pos.x + dx, y: pos.y + dy}.wrap(
-					g.height,
-					g.width,
-				)
-				neighbors = append(neighbors, wrappedCoord)
+			// early continue if we're looking at the center cell
+			if dx == 0 && dy == 0 {
+				continue
 			}
+
+			wrappedCoord := Position{x: pos.x + dx, y: pos.y + dy}.wrap(
+				g.height,
+				g.width,
+			)
+			neighbors = append(neighbors, wrappedCoord)
 		}
 	}
 	return
