@@ -5,13 +5,14 @@ type Position struct {
 	x, y int
 }
 
+// Dimensions represents the width and height of the grid.
 type Dimensions struct {
 	width, height int
 }
 
-// wrap adjusts the Position to wrap around the grid based on the given gridSize,
+// Wrap adjusts the Position to Wrap around the grid based on the given gridSize,
 // ensuring that the grid behaves as if it were toroidal (top connects to bottom and left connects to right).
-func (c Position) wrap(
+func (c Position) Wrap(
 	height int,
 	width int,
 ) Position {
@@ -61,7 +62,7 @@ func (g Grid) Neighbors(pos Position) (neighbors []Position) {
 				continue
 			}
 
-			wrappedCoord := Position{x: pos.x + dx, y: pos.y + dy}.wrap(
+			wrappedCoord := Position{x: pos.x + dx, y: pos.y + dy}.Wrap(
 				g.height,
 				g.width,
 			)

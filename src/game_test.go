@@ -4,11 +4,11 @@ import (
 	"testing"
 )
 
-func TestWrapCoordinate(t *testing.T) {
+func TestWrapPosition(t *testing.T) {
 	gridSize := 20
 	tests := []struct {
 		name     string
-		coord    Position
+		position Position
 		expected Position
 	}{
 		{"Wrap both coordinates", Position{-1, -1}, Position{gridSize - 1, gridSize - 1}},
@@ -19,9 +19,9 @@ func TestWrapCoordinate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.coord.wrap(gridSize, gridSize)
+			result := tt.position.Wrap(gridSize, gridSize)
 			if result != tt.expected {
-				t.Errorf("wrapCoordinate(%v) = %v, want %v", tt.coord, result, tt.expected)
+				t.Errorf("wrapCoordinate(%v) = %v, want %v", tt.position, result, tt.expected)
 			}
 		})
 	}
