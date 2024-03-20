@@ -57,9 +57,15 @@ func TestCellShouldLive(t *testing.T) {
 				Dimensions{width: 5, height: 5},
 			)
 
-			game.SetCell(Position{2, 1}, true)
-			game.SetCell(Position{2, 2}, true)
-			game.SetCell(Position{2, 3}, true)
+			positions := []Position{
+				{x: 2, y: 1},
+				{x: 2, y: 2},
+				{x: 2, y: 3},
+			}
+
+			for _, pos := range positions {
+				game.SetCell(pos, true)
+			}
 
 			// act
 			result := game.ShouldLive(tt.position)
@@ -78,9 +84,15 @@ func TestNextGeneration(t *testing.T) {
 		Dimensions{width: 5, height: 5},
 	)
 
-	game.SetCell(Position{x: 2, y: 1}, true)
-	game.SetCell(Position{x: 2, y: 2}, true)
-	game.SetCell(Position{x: 2, y: 3}, true)
+	positions := []Position{
+		{x: 2, y: 1},
+		{x: 2, y: 2},
+		{x: 2, y: 3},
+	}
+
+	for _, pos := range positions {
+		game.SetCell(pos, true)
+	}
 
 	game.NextGeneration()
 
