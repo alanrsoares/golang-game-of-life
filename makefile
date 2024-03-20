@@ -1,4 +1,7 @@
 # Makefile for building and running a Go project.
+help:
+	@echo "Available make commands:"
+	@cat makefile | grep '^[a-z][^:]*:' | grep -v 'install_' | cut -d: -f1 | sort | sed 's/^/  /'
 
 # Set the output binary name.
 BINARY_NAME=golang-game-of-life
